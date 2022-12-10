@@ -4,6 +4,7 @@
 from queue import Queue
 from threading import Thread
 import time
+import csv
 
 #生成类，输出一堆数字
 class Proceduer(Thread):
@@ -11,6 +12,14 @@ class Proceduer(Thread):
         super(Proceduer, self).__init__()
         self.queue = queue
     def run(self):
+        with open('data.csv', encoding='utf-8') as f:
+           reader = csv.reader(f)
+           header = next(reader)
+           print(header)
+           for row in reader:
+                print("put data is: {0} to queue".format(header))
+                self.queue.put(header)
+        '''
         try:
             for i in range(1,10):
                 print("put data is: {0} to queue".format(i))
@@ -19,6 +28,7 @@ class Proceduer(Thread):
         except Exception as e:
             print("put data error!")
             raise e
+        '''
 
 #消费者类
 class Consumer_odd(Thread):
@@ -29,11 +39,17 @@ class Consumer_odd(Thread):
         try:
             while not self.queue.empty():
                 number = self.queue.get()
+                #number = 'll'
+                print("get {0} from queue ODD".format(number))
+                '''这里添加送达回执即可实现消息列队进度控制'''
+                self.queue.put(number)
+                '''
                 if number % 2 != 0:
                     print("get {0} from queue ODD".format(number))
                 else:
                     self.queue.put(number)
-                time.sleep(1)
+                '''
+                time.sleep(0.2)
         except Exception as e:
             raise e
 
@@ -61,11 +77,11 @@ def main():
     p.join()
     time.sleep(1)
     c1 = Consumer_odd(queue=queue)
-    c2 = Consumer_even(queue=queue)
+    #c2 = Consumer_even(queue=queue)
     c1.start()
-    c2.start()
+    #c2.start()
     c1.join()
-    c2.join()
+    #c2.join()
 
     print("All threads terminate!")
 
